@@ -1,19 +1,16 @@
 % CHEMENG 4H03 Project
 % Group 5
-% Written by Steven Chui on 2025-03-22
+% Written by Steven Chui on 2025-03-27
 
+% Diabetes Health Indicator Dataset
 clear variables; close all; clc;
 
 %% Import dataset
-data = readmatrix("pima-indians-diabetes.csv");
-% X = data(:,1:end-1);
-X = data(:,[3 6]);
-Y = data(:,end);
-% VarName = {'Preg'; 'Glucose'; 'Blood Pressure'; 
-%     'Skin Thickness'; 'Insulin';
-%     'BMI'; 'DPF'; 'Age'};
-% VarName = {'Preg'; 'Glucose'; 'Blood Pressure';'BMI'; 'DPF'; 'Age'};
-VarName = {'Blood Pressure'; 'BMI'};
+data = readmatrix("Mendeley-Dataset-of-Diabetes.csv");
+X = data(:,4:12);
+Y = data(:,1);
+VarName = {'Age';'Urea';'Cr';'HbA1c';'Chol';'TG';'HDL';
+    'LDL';'VLDL';'BMI'};
 [N,K] = size(X);
 [~,M] = size(Y);
 
@@ -37,8 +34,8 @@ end % for
 %% PCA by nipals
 
 % PCA with cross validation
-G = 6;      % number of groups to split the data into
-A_max = 5;  % maximum number of principle components needed to be fitted
+G = 5;      % number of groups to split the data into
+A_max = 6;  % maximum number of principle components needed to be fitted
 
 % Assign a random group value to each row in X_CS
 rand_seed = randi([1,G],G,1);
@@ -100,8 +97,8 @@ disp(Q2_vec)
 
 %% Plots
 % Let's build a 2 component model regardless
-[T,P,R2] = nipalspca(X,2);
+[T,P,R2] = nipalspca(X,5);
 
 % Score plots functions below created by Dr. Jake Nease
-scoreplot(T(:,1), T(:,2));
-score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
+% scoreplot(T(:,1), T(:,2));
+% score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
