@@ -34,11 +34,11 @@ fprintf('Keeping %d complete cases (%.1f%% of the dataset)\n', ...
         sum(complete_cases), 100*sum(complete_cases)/length(complete_cases));
 
 % Create clean dataset with only complete cases
-features = predictors(complete_cases, :); % Changed variable name for consistency
-labels = target(complete_cases);          % Changed variable name for consistency
+features = predictors(complete_cases, :); 
+labels = target(complete_cases);          
 
 % Calculate the number of samples
-NumSamples = size(features, 1);          % Added calculation of NumSamples
+NumSamples = size(features, 1);         
 
 % Random training/testing split
 rng("default")
@@ -49,7 +49,7 @@ TrainRowInds = randperm(NumSamples, TrainNumSamples);
 TrainFeatures = features(TrainRowInds, :);
 TrainLabels = labels(TrainRowInds);
 TestFeatures = features(setdiff(1:NumSamples, TrainRowInds), :);
-TestLabels = labels(setdiff(1:NumSamples, TrainRowInds));  % Removed extra dimension
+TestLabels = labels(setdiff(1:NumSamples, TrainRowInds));  
 TestNumSamples = length(TestLabels);
 
 
@@ -69,14 +69,18 @@ dtTest_confusionmat = confusionmat(TestLabels, dtTestPredLabels);
 dtTestAccuracy = sum(diag(dtTest_confusionmat))/sum(dtTest_confusionmat(:));
 fprintf('Decision Tree Testing Accuracy: %.2f%%\n', dtTestAccuracy*100);
 
-% Visualize results with confusion matrix
-figure
-confusionchart(TestLabels, dtTestPredLabels, 'Title', 'Decision Tree Classifier Testing Confusion Matrix');
-
 % Calculate training accuracy
 dtTrain_confusionmat = confusionmat(TrainLabels, dtTrainPredLabels);
 dtTrainAccuracy = sum(diag(dtTrain_confusionmat))/sum(dtTrain_confusionmat(:));
 fprintf('Decision Tree Training Accuracy: %.2f%%\n', dtTrainAccuracy*100);
+
+% Show the training confusion matrix
+figure
+confusionchart(TrainLabels, dtTrainPredLabels, 'Title', 'Decision Tree Classifier Training Confusion Matrix');
+
+% Visualize results with confusion matrix
+figure
+confusionchart(TestLabels, dtTestPredLabels, 'Title', 'Decision Tree Classifier Testing Confusion Matrix');
 
 % Show the training confusion matrix
 figure
