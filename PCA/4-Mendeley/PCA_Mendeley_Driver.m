@@ -7,9 +7,9 @@ clear variables; close all; clc;
 
 %% Import dataset
 data = readmatrix("Mendeley-Dataset-of-Diabetes.csv");
-X = data(:,4:12);
+X = data(:,5:12);
 Y = data(:,1);
-VarName = {'Age';'Urea';'Cr';'HbA1c';'Chol';'TG';'HDL';
+VarName = {'Urea';'Cr';'HbA1c';'Chol';'TG';'HDL';
     'LDL';'VLDL';'BMI'};
 [N,K] = size(X);
 [~,M] = size(Y);
@@ -98,7 +98,10 @@ disp(Q2_vec)
 %% Plots
 % Let's build a 2 component model regardless
 [T,P,R2] = nipalspca(X,5);
+disp('T'); disp(T);
+disp("P"); disp(P);
+disp("R2"); disp(R2)
 
 % Score plots functions below created by Dr. Jake Nease
-% scoreplot(T(:,1), T(:,2));
-% score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
+scoreplot(T(:,1), T(:,2));
+score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
