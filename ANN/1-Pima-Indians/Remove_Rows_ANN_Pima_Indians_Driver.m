@@ -17,12 +17,11 @@ VarName = {'Preg'; 'Glucose'; 'Blood Pressure';
 % Any other things?
 
 %% Pre-Processing
-
-% Identify columns where 0s represent missing values
+% Identify columns with missing values
 columns_to_check = [2, 3, 4, 5, 6]; % Glucose, BP, Skin, Insulin, BMI
 column_names = {'Glucose', 'Blood Pressure', 'Skin Thickness', 'Insulin', 'BMI'};
 
-% Create a logical array to identify rows with missing values
+% Identify rows with missing values
 has_missing = false(size(predictors, 1), 1);
 for i = 1:length(columns_to_check)
     col = columns_to_check(i);
@@ -38,7 +37,7 @@ fprintf('Removing %d rows with missing data (%.1f%% of the dataset)\n', ...
 fprintf('Keeping %d complete cases (%.1f%% of the dataset)\n', ...
         sum(complete_cases), 100*sum(complete_cases)/length(complete_cases));
 
-% Create clean dataset with only complete cases
+% Create clean dataset with complete cases
 predictors_clean = predictors(complete_cases, :);
 target_clean = target(complete_cases);
 
@@ -124,6 +123,6 @@ figure, plotperform(tr)
 %figure, plottrainstate(tr)
 %figure, ploterrhist(e)
 
-
+fprintf('MSE: %.6f\n', performance);
 
 
