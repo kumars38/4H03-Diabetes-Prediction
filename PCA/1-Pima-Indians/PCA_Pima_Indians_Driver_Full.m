@@ -7,11 +7,14 @@ clear variables; close all; clc;
 %% Import dataset
 
 % Cleaned data - No NAN (reduced from 7XX rows to 393 rows)
-% Selected variables only
 data = readmatrix("pima-indians-diabetes-NO-NAN.csv");
-X = data(:,[2 3 5 6 7]);
+X = data(:,1:end-1);
 Y = data(:,end);
-VarName = {'Glucose'; 'Blood Pressure'; 'Insulin';'BMI'; 'DPF'};
+
+VarName = {'Preg'; 'Glucose'; 'Blood Pressure'; 
+    'Skin Thickness'; 'Insulin';
+    'BMI'; 'DPF'; 'Age'};
+
 
 [N,K] = size(X);
 [~,M] = size(Y);
@@ -37,7 +40,7 @@ end % for
 
 % PCA with cross validation
 G = 3;      % number of groups to split the data into
-A_max = 5;  % maximum number of principle components needed to be fitted
+A_max = 8;  % maximum number of principle components needed to be fitted
 
 % Assign a random group value to each row in X_CS
 rand_seed = randi([1,G],G,1);
@@ -98,14 +101,22 @@ disp(Q2_vec)
 % this dataset
 
 %% Plots
-% Let's build a 3 component model regardless
-[T,P,R2] = nipalspca(X,4);
+% Let's build a 5 component model
+% cite: nipalspca.p function from class examples is used here
+[T,P,R2] = nipalspca(X,5);
 
 % Score plots functions below created by Dr. Jake Nease
 score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
-score_loading_plot(T(:,3), T(:,4),P(:,3),P(:,4), VarName);
-xlabel("Third Score t_3")
-ylabel("Fourth Score t_4")
 loading_plot(P(:,1),1,VarName)
 loading_plot(P(:,2),2,VarName)
 loading_plot(P(:,3),3,VarName)
+
+figure
+nCompMesh = 1:1:A_max;
+plot(nCompMesh,Q2_vec,"-bo")
+hold on
+plot(nCompMesh, R2_vec,"-rs")
+hold off
+legend('Q2', 'R2','Location','southeast')
+xlabel('Number of PC fitted')
+ylabel('Q^2 or R^2')
