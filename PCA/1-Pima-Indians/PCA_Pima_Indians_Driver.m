@@ -69,7 +69,7 @@ for a = 1:A_max
         end % for i
 
         % fit 'a' component onto the training data
-        [~,P,~] = nipalspca(X_train,a);
+        [~,P,~] = nipalspca_me(X_train,a);
 
         % Project testing data onto the model
         T_new = X_test*P;
@@ -84,7 +84,7 @@ for a = 1:A_max
 
     % Fit a full PCA model with 'a' component
     % with X_CS
-    [~,~,R2] = nipalspca(X_CS,a);
+    [~,~,R2] = nipalspca_me(X_CS,a);
     R2_vec(a) = R2(a);
 
 end % for a
@@ -99,13 +99,64 @@ disp(Q2_vec)
 
 %% Plots
 % Let's build a 3 component model regardless
-[T,P,R2] = nipalspca(X,4);
+[T,P,R2] = nipalspca_me(X_CS,3);
 
 % Score plots functions below created by Dr. Jake Nease
 score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
-score_loading_plot(T(:,3), T(:,4),P(:,3),P(:,4), VarName);
-xlabel("Third Score t_3")
-ylabel("Fourth Score t_4")
+title("Before Removing Outlier")
+score_loading_plot(T(:,1), T(:,3),P(:,1),P(:,3), VarName);
+title("Before Removing Outlier")
+xlabel("First Score t_1")
+ylabel("Third Score t_3")
+score_loading_plot(T(:,2), T(:,3),P(:,2),P(:,3), VarName);
+title("Before Removing Outlier")
+xlabel("Second Score t_2")
+ylabel("Third Score t_3")
+loading_plot(P(:,1),1,VarName)
+title("Before Removing Outlier")
+loading_plot(P(:,2),2,VarName)
+title("Before Removing Outlier")
+loading_plot(P(:,3),3,VarName)
+title("Before Removing Outlier")
+
+%% SPE plots
+% Calculate residules of the 3-component PCA model
+E = X_CS - T*P';
+
+% Plot - following function by Alex D'Souza
+fig_SPE = SPEplot(E);
+
+%% T2 plot
+fig_T2 = T2plot(T,N,3);
+
+% Removing outlier
+% Removing the points that cannot be explained by model
+% and deviate significantly from main cluster
+X_CS(2,:) = [];
+X_CS(5,:) = [];
+X_CS(8,:) = [];
+X_CS(58,:) = [];
+X_CS(112,:) = [];
+X_CS(227,:) = [];
+
+% Refit model
+[T_fin,P_fin,R2_fin] = nipalspca_me(X_CS,3);
+% Score plots functions below created by Dr. Jake Nease
+score_loading_plot(T(:,1), T(:,2),P(:,1),P(:,2), VarName);
+score_loading_plot(T(:,2), T(:,3),P(:,2),P(:,3), VarName);
+xlabel("Second Score t_2")
+ylabel("Third Score t_3")
+score_loading_plot(T(:,1), T(:,3),P(:,1),P(:,3), VarName);
+xlabel("First Score t_1")
+ylabel("Third Score t_3")
 loading_plot(P(:,1),1,VarName)
 loading_plot(P(:,2),2,VarName)
 loading_plot(P(:,3),3,VarName)
+disp("R2 of Final 3-component PCA model")
+disp(R2_fin)
+
+%%%%%%%% END OF CODE %%%%%%%%%%%%%%
+
+
+
+
