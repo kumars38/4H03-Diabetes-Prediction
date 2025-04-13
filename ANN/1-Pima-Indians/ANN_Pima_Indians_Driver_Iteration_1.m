@@ -37,6 +37,8 @@ trainFcn = 'trainlm';
 %% Hidden layer size
 % Arbitrary hidden layer size
 hiddenLayerSize = 20;
+
+% net = fitnet(hiddenLayerSize, trainFcn);
 net = patternnet(hiddenLayerSize, trainFcn);
 
 %% Activation functions
@@ -70,7 +72,7 @@ e = gsubtract(t,y);
 performance = perform(net,t,y);
 
 % View the Network
-% view(net);
+view(net);
 
 %% Calculate classification accuracy
 N = length(t);
