@@ -40,6 +40,9 @@ accuracies = zeros(K, 1);
 precisions = zeros(K, 1);
 recalls = zeros(K, 1);
 
+% confusion matrix over all folds
+combinedConfMat = zeros(2, 2);
+
 for k = 1:K
     fprintf('Fold %d\n', k);
 
@@ -80,11 +83,15 @@ for k = 1:K
 
     % Compute confusion matrix
     confMat = confusionmat(tTest, yDisc);
+
+    % Store total
+    combinedConfMat = combinedConfMat + confMat;
+
+    % Classification metrics
     TN = confMat(1,1);
     FN = confMat(2,1);
     FP = confMat(1,2);
     TP = confMat(2,2);
-    % Metrics
     % correct predictions out of all predictions
     accuracy = (TP + TN) / (TN + FN + FP + TP) * 100;
     % correct diabetes prediction out of all diabetes predictions
@@ -107,3 +114,8 @@ fprintf('\nFinal Results (Avg over %d folds) \n', K);
 fprintf('Average Accuracy: %.2f%%\n', mean(accuracies));
 fprintf('Average Precision: %.2f%%\n', mean(precisions));
 fprintf('Average Recall: %.2f%%\n', mean(recalls));
+
+%% Combined confusion matrix
+figure;
+confusionchart(combinedConfMat, {'No Diabetes', 'Diabetes'});
+title('Combined Confusion Matrix (Across All Folds)');
