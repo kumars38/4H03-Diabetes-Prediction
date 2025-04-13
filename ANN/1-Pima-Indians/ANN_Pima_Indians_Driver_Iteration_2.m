@@ -18,12 +18,12 @@ column_names = {'Glucose', 'Blood Pressure', 'Skin Thickness', 'Insulin', 'BMI'}
 
 % Identify rows with missing values
 has_missing = false(size(predictors, 1), 1);
-for i = 1:length(columns_to_check)
-    col = columns_to_check(i);
-    zero_indices = predictors(:, col) == 0;
-    has_missing = has_missing | zero_indices;
-    fprintf('Column %s has %d missing values (zeros)\n', column_names{i}, sum(zero_indices));
-end
+% for i = 1:length(columns_to_check)
+%     col = columns_to_check(i);
+%     zero_indices = predictors(:, col) == 0;
+%     has_missing = has_missing | zero_indices;
+%     fprintf('Column %s has %d missing values (zeros)\n', column_names{i}, sum(zero_indices));
+% end
 
 % Remove rows with missing values
 complete_cases = ~has_missing;
@@ -50,71 +50,86 @@ x = xn;
 %x = predictors_clean';
 t = target_clean';                       % targets are already binary
 
-%% Choose a Training Function
-trainFcn = 'trainscg'; % for cross entropy
+%% Seed for Reproducibility
+rng(999);
 
-%% Hidden layer size
-hiddenLayerSize = [15 15 10];
-net = patternnet(hiddenLayerSize, trainFcn);
-net.trainParam.epochs = 1000;
-net.trainParam.max_fail = 50;
+%% Cross-validation Setup
+K = 5;
+cv = cvpartition(size(x, 2), 'KFold', K);
 
-%% Activation functions
-% ReLU activation from input -> HL1, and HL1 -> HL2
-net.layers{1}.transferFcn = 'poslin';   
-net.layers{2}.transferFcn = 'poslin';  
-net.layers{3}.transferFcn = 'poslin';  
+% Init arrays for metrics
+accuracies = zeros(K, 1);
+precisions = zeros(K, 1);
+recalls = zeros(K, 1);
 
-% Sigmoid activation from final HL -> output
-% This allows for output to be a probability between 0 and 1
-net.layers{4}.transferFcn = 'logsig';    
+for k = 1:K
+    fprintf('Fold %d\n', k);
 
-%% Loss criterion (defaults to MSE)
-net.performFcn = 'crossentropy';
+    % Get training and test indices
+    trainIdx = training(cv, k);
+    testIdx = test(cv, k);
 
-%% Training/Validation/Testing Split
-% Default division for now*
-net.divideParam.trainRatio = 70/100;
-net.divideParam.valRatio = 15/100;
-net.divideParam.testRatio = 15/100;
+    xTrain = x(:, trainIdx);
+    tTrain = t(:, trainIdx);
+    xTest = x(:, testIdx);
+    tTest = t(:, testIdx);
 
-%% Perform Train/Validate/Test
-% Train the Network
-[net,tr] = train(net,x,t);
+    %% Define Net
+    trainFcn = 'trainscg';
+    hiddenLayers = [15 15 15];
+    net = patternnet(hiddenLayers, trainFcn);
 
-% Test the Network
-y = net(x);
-e = gsubtract(t,y);
-performance = perform(net,t,y);
+    % Internal validation set to prevent overfitting
+    net.divideParam.trainRatio = 90/100;
+    net.divideParam.valRatio = 10/100;
+    net.divideParam.testRatio = 0;
+    net.trainParam.max_fail = 10;
 
-% View the Network
-view(net);
+    % Activation functions
+    net.layers{1}.transferFcn = 'poslin';
+    net.layers{2}.transferFcn = 'poslin';
+    net.layers{3}.transferFcn = 'poslin';
+    net.layers{4}.transferFcn = 'logsig';
 
-%% Calculate classification accuracy
-N = length(t);
-numCorrect=0;
-thresh = 0.5;
-yDisc = double(y >= thresh);
-for i=1:N
-    if yDisc(i) == t(i)
-        numCorrect = numCorrect+1;
-    end
+    % Loss function
+    net.performFcn = 'crossentropy';
+
+    % Train
+    [net, ~] = train(net, xTrain, tTrain);
+
+    % Test
+    yTest = net(xTest);
+    % Threshold changed to 0.4 to favour recall
+    thresh = 0.4;
+    yDisc = double(yTest >= thresh);
+
+    % Compute confusion matrix
+    confMat = confusionmat(tTest, yDisc);
+    TN = confMat(1,1);
+    FN = confMat(2,1);
+    FP = confMat(1,2);
+    TP = confMat(2,2);
+    % Metrics
+    % correct predictions out of all predictions
+    accuracy = (TP + TN) / (TN + FN + FP + TP) * 100;
+    % correct diabetes prediction out of all diabetes predictions
+    precision = TP / (TP + FP) * 100;
+    % correct diabetes prediction out of all those who actually have diabetes
+    recall = TP / (TP + FN) * 100;
+
+    % Store
+    accuracies(k) = accuracy;
+    precisions(k) = precision;
+    recalls(k) = recall;
+
+    fprintf('Accuracy: %.2f%%\n', accuracy);
+    fprintf('Precision: %.2f%%\n', precision);
+    fprintf('Recall: %.2f%%\n', recall);
 end
-accuracy = numCorrect/N*100;
-fprintf('Classification accuracy: %.2f\n%', accuracy);
 
-%% Visualization: Confusion Matrix
-confMat = confusionmat(t, yDisc);
-figure;
-confusionchart(confMat, {'No Diabetes', 'Diabetes'});
-title('Confusion Matrix');
-
-%% Plots
-% Uncomment these lines to enable various plots.
-figure, plotperform(tr)
-%figure, plottrainstate(tr)
-%figure, ploterrhist(e)
-
-fprintf('Cross-Entropy Loss: %.6f\n', performance);
-
+%% Final Report
+fprintf('\nFinal Results (Avg over %d folds) \n', K);
+fprintf('Average Accuracy: %.2f%%\n', mean(accuracies));
+fprintf('Average Precision: %.2f%%\n', mean(precisions));
+fprintf('Average Recall: %.2f%%\n', mean(recalls));
 

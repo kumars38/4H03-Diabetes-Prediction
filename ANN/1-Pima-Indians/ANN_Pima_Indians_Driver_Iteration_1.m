@@ -28,78 +28,82 @@ VarName = {'Preg'; 'Glucose'; 'Blood Pressure';
 x = predictors';
 t = target';
 
-%% Choose a Training Function
-% TODO: replace with optimizer which works with cross-entropy
-% such as Adam optimizer
-% For now, using Levenberg–Marquardt (trainlm)
-trainFcn = 'trainlm';
+%% Seed for reproducibility
+rng(999);
 
-%% Hidden layer size
-% Arbitrary hidden layer size
-hiddenLayerSize = 20;
+%% Cross-validation Setup
+K = 5;
+cv = cvpartition(size(x, 2), 'KFold', K);
 
-% net = fitnet(hiddenLayerSize, trainFcn);
-net = patternnet(hiddenLayerSize, trainFcn);
+% Init arrays for metrics
+accuracies = zeros(K, 1);
+precisions = zeros(K, 1);
+recalls = zeros(K, 1);
 
-%% Activation functions
-% ReLU activation from input -> hidden layer
-% can be changed
-net.layers{1}.transferFcn = 'poslin';   
-% Sigmoid activation from hidden -> output layer
-% This allows for output to be a probability between 0 and 1
-net.layers{2}.transferFcn = 'logsig';    
+for k = 1:K
+    fprintf('Fold %d\n', k);
 
-%% Loss criterion (defaults to MSE)
-% Set performance function to cross-entropy for binary targets
-% outcome vector (target):
-    % 0 = doesn't have diabetes
-    % 1 = has diabetes
-% net.performFcn = 'crossentropy';
+    % Get training and test indices
+    trainIdx = training(cv, k);
+    testIdx = test(cv, k);
 
-%% Training/Validation/Testing Split
-% Default division for now*
-net.divideParam.trainRatio = 70/100;
-net.divideParam.valRatio = 15/100;
-net.divideParam.testRatio = 15/100;
+    xTrain = x(:, trainIdx);
+    tTrain = t(:, trainIdx);
+    xTest = x(:, testIdx);
+    tTest = t(:, testIdx);
 
-%% Perform Train/Validate/Test
-% Train the Network
-[net,tr] = train(net,x,t);
+    %% Define Net
+    trainFcn = 'trainlm';
+    hiddenLayerSize = 20;
+    net = patternnet(hiddenLayerSize, trainFcn);
 
-% Test the Network
-y = net(x);
-e = gsubtract(t,y);
-performance = perform(net,t,y);
+    % Internal validation set to prevent overfitting
+    net.divideParam.trainRatio = 90/100;
+    net.divideParam.valRatio = 10/100;
+    net.divideParam.testRatio = 0;
+    net.trainParam.max_fail = 10;
 
-% View the Network
-view(net);
+    % Activation functions
+    net.layers{1}.transferFcn = 'poslin';   
+    net.layers{2}.transferFcn = 'logsig';    
 
-%% Calculate classification accuracy
-N = length(t);
-numCorrect=0;
-yDisc = round(y);
-for i=1:N
-    % Can change this threshold
-    % For now, round outputs to 0 or 1
-    if yDisc(i) == t(i)
-        numCorrect = numCorrect+1;
-    end
+    % Loss function
+    net.performFcn = 'mse';
+
+    % Train
+    [net, ~] = train(net, xTrain, tTrain);
+
+    % Test
+    yTest = net(xTest);
+    thresh = 0.4;
+    yDisc = double(yTest >= thresh);
+
+    % Compute confusion matrix
+    confMat = confusionmat(tTest, yDisc);
+    TN = confMat(1,1);
+    FN = confMat(2,1);
+    FP = confMat(1,2);
+    TP = confMat(2,2);
+    % Metrics
+    % correct predictions out of all predictions
+    accuracy = (TP + TN) / (TN + FN + FP + TP) * 100;
+    % correct diabetes prediction out of all diabetes predictions
+    precision = TP / (TP + FP) * 100;
+    % correct diabetes prediction out of all those who actually have diabetes
+    recall = TP / (TP + FN) * 100;
+
+    % Store
+    accuracies(k) = accuracy;
+    precisions(k) = precision;
+    recalls(k) = recall;
+
+    fprintf('Accuracy: %.2f%%\n', accuracy);
+    fprintf('Precision: %.2f%%\n', precision);
+    fprintf('Recall: %.2f%%\n', recall);
 end
-accuracy = numCorrect/N*100;
-fprintf('Classification accuracy: %.2f\n', accuracy);
 
-%% Visualization: Confusion Matrix
-confMat = confusionmat(t, yDisc);
-figure;
-confusionchart(confMat, {'No Diabetes', 'Diabetes'});
-title('Confusion Matrix');
-
-%% Plots
-% Uncomment these lines to enable various plots.
-figure, plotperform(tr)
-%figure, plottrainstate(tr)
-%figure, ploterrhist(e)
-
-
-
-
+%% Final Report
+fprintf('\nFinal Results (Avg over %d folds) \n', K);
+fprintf('Average Accuracy: %.2f%%\n', mean(accuracies));
+fprintf('Average Precision: %.2f%%\n', mean(precisions));
+fprintf('Average Recall: %.2f%%\n', mean(recalls));
