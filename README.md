@@ -20,9 +20,9 @@ ANN models for the Pima-Indians dataset.
 ## Decision Tree
 Decision tree models for the Pima-Indians dataset.
 
-[DT iteration 1](Decision_Tree/1-Pima-Indians/DT_Pima_Indians_Iteration1.m)
+[DT iteration 1](Decision%20Tree/1-Pima-Indians/DT_Pima_Indians_Iteration1.m)
 
-[DT iteration 2](Decision_Tree/1-Pima-Indians/DT_Pima_Indians_Iteration2.m)
+[DT iteration 2](Decision%20Tree/1-Pima-Indians/DT_Pima_Indians_Iteration2.m)
 
-[DT using PCA-reduced inputs](Decision_Tree/1-Pima-Indians/DT_Pima_Indians_Iteration3.m)
+[DT using PCA-reduced inputs](Decision%20Tree/1-Pima-Indians/DT_Pima_Indians_Iteration3.m)
 
