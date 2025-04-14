@@ -1,12 +1,15 @@
 # 4H03-Diabetes-Prediction
+Please use the links below to access code in this repo.
 
-### PCA
-PCA >> 1-Pima-Indians
+## PCA
+PCA models for the Pima-Indians dataset.
 
-PCA_Pima_Indians_Driver_Full.m (all 8 variables, no NAN)
-PCA_Pima_Indians_Driver.m (5 variables, no NAN)
+[5-component model on 8 variables (i.e.,full dataset, no NAN)](PCA\1-Pima-Indians\PCA_Pima_Indians_Driver.m)
 
-### Decision Tree
+[3-component model on 5 selected variables](PCA\1-Pima-Indians\PCA_Pima_Indians_Driver_Full.m)
+
+
+## Decision Tree
 Decision Tree >> 1-Pima-Indians >> DT_Pima_Indians_Driver.m
 
 ## ANN

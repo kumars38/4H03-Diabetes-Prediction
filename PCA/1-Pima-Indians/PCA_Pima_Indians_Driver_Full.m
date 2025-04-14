@@ -120,3 +120,12 @@ hold off
 legend('Q2', 'R2','Location','southeast')
 xlabel('Number of PC fitted')
 ylabel('Q^2 or R^2')
+%% SPE plots
+% Calculate residules of the 3-component PCA model
+E = X_CS - T*P';
+
+% Plot - following function by Alex D'Souza
+fig_SPE = SPEplot(E);
+
+%% T2 plot
+fig_T2 = T2plot(T,N,5);
