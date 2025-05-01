@@ -1,5 +1,17 @@
 # 4H03-Diabetes-Prediction
-Please use the links below to access code in this repo.
+**Contributors**: Elsie Igho, Steven Chui, Samarth Kumar, James Park
+
+We created a diabetes screening tool based on modeling public data involving health metrics from diabetic/non-diabetic patients.
+
+**Datasets**:
+1) Pima-Indians: https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database/data
+2) Diabetes-Health-Indicators: https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data
+3) Diabetes-Dataset: https://www.kaggle.com/datasets/ankitbatra1210/diabetes-dataset
+4) Mendeley-Diabetes-Dataset: https://data.mendeley.com/datasets/wj9rwkp9c2/1
+
+**Credits to**: Alexandre D'Souza (Chemical Engineering, McMaster University) for providing the starter code.
+
+Please use the links below to access the models and their code.
 
 ## PCA
 PCA models for the Pima-Indians dataset.
